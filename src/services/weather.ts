@@ -1,5 +1,15 @@
 const api_url = import.meta.env.VITE_API_BASEURL;
 const api_key = import.meta.env.VITE_API_KEY;
+interface air_quality{
+  co: 208.60000610351562,
+            no2: number,
+            o3: number,
+            so2: number,
+            pm2_5: number,
+            pm10: number,
+            usepaindex: number,
+            gbdefraindex: number
+}
 export interface hour {
   chance_of_rain: number,
   chance_of_snow: number,
@@ -82,6 +92,7 @@ export interface forecastDay {
   hour: Array<hour>
 }
 export interface weatherData {
+  code: number,
   location: {
     name: string;
     region: string;
@@ -123,16 +134,49 @@ export interface weatherData {
     uv: number;
     gust_mph: number;
     gust_kph: number;
+    air_quality: air_quality
   };
 }
 
 const getData = async (q: string) => {
-  const response = await fetch(
-    `${api_url}/forecast.json?key=${api_key}&q=${q}&days=7`
-  );
-  const data: weatherData = await response.json();
-  console.log(data);
+  let data : weatherData = {} as weatherData
+  try{
+    const response = await fetch(
+      `${api_url}/forecast.json?key=${api_key}&q=${q}&days=7&aqi=yes`
+      );
+      if(response.status===400){
+        data.code = 0
+      } else {
+         data = await response.json();
+      }
+    } catch(error){
+console.log(error)
+    }
+  
   return data;
+// try {
+//   const data : weatherData = await fetch(
+//           `${api_url}/forecast.json?key=${api_key}&q=${q}&days=7&aqi=yes`
+//           ).then(response=>{
+//             if(response.status===400){
+//               console.log('error xd')
+//               data.code = 0
+//               return data
+//             } else {
+//             return response.json()
+//             }
+//           })
+//           data.code = 1
+//           return data
+// } catch (e) {
+//   if (e) {
+//     const data : weatherData = {} as weatherData
+//     data.code = 0
+//     return data
+
+//   }
+//   throw e;
+// }
 };
 
 export default getData;
