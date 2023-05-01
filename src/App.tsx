@@ -1,42 +1,66 @@
-import { Center, useToast } from "@chakra-ui/react";
+import { Center, Flex, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import SearchBar from "./components/SearchBar";
 import WeatherData from "./components/WeatherData";
 import getData, { weatherData } from "./services/weather";
-import moment from "moment";
-
+import Sidebar from "./components/Sidebar";
+import Copy from "./components/Copy";
 function App() {
-  const [showData, setShowData] = useState<boolean>(true);
+  const [showData, setShowData] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [q, setQ] = useState<string>("");
   const [data, setData] = useState<weatherData>({} as weatherData);
   const toast = useToast();
   const handleSearch = async () => {
     if(q !==''){
-      setShowData(true);
-    setIsLoading(true)
-    setData(await getData(q));
-    console.log(q);
-    setQ("");setIsLoading(false)
+      setIsLoading(true)
+     setData(await getData(q));
+     console.log(data)
+      if(data.code===0){
+        toast({
+          title: 'OOOOOPS',
+          description: "Location not found",
+          status: 'warning',
+          duration: 4000,
+          isClosable: true,
+          position: 'top-left'
+  
+        })
+      } else{
+        setQ("");
+        setIsLoading(false)
+        setShowData(true);
+      }
     } else {
       toast({
         title: 'OOOOOPS',
         description: "You need to type in something before clicking the button buddy ",
-        status: 'error',
-        duration: 9000,
+        status: 'info',
+        duration: 4000,
         isClosable: true,
+        position: 'top-left'
 
       })
     }
   };
   const handleLocationDetected = async (position: any) => {
-    setShowData(true);
     setIsLoading(true)
     setData(
       await getData(`${position.coords.latitude},${position.coords.longitude}`)
-    );
-    setIsLoading(false)
+      );
+      setIsLoading(false)
+      setShowData(true);
   };
+  const getUserLocation = () => {
+    const successCallback = (position: any) => {
+      handleLocationDetected(position);
+    };
+
+    const errorCallback = (error: any) => {
+      console.log(error);
+    };
+
+    navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
+  }
   useEffect(() => {
     const successCallback = (position: any) => {
       handleLocationDetected(position);
@@ -48,28 +72,35 @@ function App() {
 
     navigator.geolocation.getCurrentPosition(successCallback, errorCallback);
   }, []);
-  console.log(moment().hour())
   return (
     <>
     
 
-      <Center h={"calc(100vh)"}  bgGradient='linear(to-br, tomato, pink.400)'>
+      <Center h={{base: showData ? 'full' : 'calc(100vh)', lg:('calc(100vh)')}} w={'calc(100vw)'} bgColor={'gray.200'} flexDir={'column'}>
         <Center
-          w={{ base: "calc(80vw)", lg: "calc(40vw)" }}
-          // maxH={'calc(50vh)'}
-          h={'wrap'}
-          bg={"ghostwhite"}
-          rounded={"lg"}
+          w={{ base: showData ? 'calc(100vw)' : 'calc(85vw)' , lg: showData ? 'calc(60vw)' : 'calc(30vw)'}}
+          h={{ base: showData ? 'full' : 'calc(20vw)', lg : showData ?  'calc(80vh)' : 'calc(5vw)'}}
+          bg={"ghosyWhite"}
+          rounded={{base: '2xl', lg: 'calc(2vh)'}}
           shadow={"xl"}
           flexDir={"column"}
-          padding={10}
+          // padding={5}
           border={'2px'}
           borderColor={'blackAlpha.100'}
         >
-          <Center flex={1} w={"full"} alignItems={'center'} >
+          {/* <Center flex={1} w={"full"} alignItems={'center'} >
             <SearchBar q={q} setQ={setQ} handleClick={handleSearch} />
           </Center>
-          {showData ? <WeatherData data={data} isLoading={isLoading}/> : <></>}
+          {showData ? <WeatherData data={data} isLoading={isLoading}/> : <></>} */}
+
+          <Flex flexDir={{base:'column', lg:'row'}} w={showData ? 'full' : 'wrap'} h={'full'} justifyContent={'start'} >
+            <Sidebar q={q} setQ={setQ} showData={showData} setIsLoading={setIsLoading} isLoading={isLoading} handleSearch={handleSearch} data={data} getUserLocation={getUserLocation} />
+            {/* <WeatherData data={data} isLoading={isLoading}/> */}
+            {showData ? <WeatherData data={data} isLoading={isLoading}/> : <></>}
+          </Flex>
+        </Center>
+        <Center w={{base: showData ? 'calc(80vw)' : 'calc(80vw)', lg: showData ? 'calc(75vw)' : 'calc(28vw)'}}>
+        <Copy showData={showData} />
         </Center>
       </Center>
     </>

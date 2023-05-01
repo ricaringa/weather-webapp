@@ -1,4 +1,4 @@
-import { Center, Divider } from '@chakra-ui/react'
+import { Box, Center, Divider } from '@chakra-ui/react'
 import { forecastDay, hour } from '../../services/weather'
 import Hour from '../Hour'
 import moment from 'moment'
@@ -21,15 +21,15 @@ export default function TodayData({forecast} : WeekDataProps) {
     padding={"0.5em"}
     rounded={"md"}
     fontStyle={"unset"}
+    fontFamily={'Quicksand'}
   >
-   <Center dir={'row'} gap={2} w={'full'} justifyContent={'start'}><BsClock /> Hourly Forecast</Center>
+   <Center dir={'row'} gap={2} w={'full'} overflowX={'scroll'} justifyContent={'start'}><BsClock /> Hourly Forecast</Center>
     <Divider />
-     <Center dir={'row'} w={'full'}>
-
-    {filtered.map((item: hour) => 
-    <Hour data={item}/>
+     <Box dir={'column'} w={'50px'} overflowX={'scroll'}>
+    {filtered.map((item: hour, key: number) => 
+    <Hour data={item} key={key}/>
     
-    )}</Center>
+    )}</Box>
     </Center>
    
   )
